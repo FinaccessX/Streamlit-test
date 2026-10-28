@@ -1,15 +1,31 @@
+import requests
 import streamlit as st
-import pandas as pd
-import numpy as np
 
-random_data = np.random.randint(10,1000, 10)
+token = st.secrets["GITHUB_TOKEN"]
 
-st.write(random_data)
+url = (
+    "https://api.github.com/repos/"
+    "FinaccessX/Finaccess_Resources/contents/"
+)
 
-title = st.text_input("Movie title", "Life of Brian")
-st.write("The current movie title is", title)
+response = requests.get(
+    url,
+    headers={
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json"
+    },
+    timeout=15
+)
 
-email = st.text_input("Email", type="email")
-if email:
-    st.write("We'll reach you at", email)
-  
+st.write("HTTP status:", response.status_code)
+
+if response.status_code == 200:
+    st.success("Token can read repository contents.")
+elif response.status_code == 401:
+    st.error("Token is invalid or expired.")
+elif response.status_code == 403:
+    st.error("GitHub is denying access. Check token permissions and organization policies.")
+elif response.status_code == 404:
+    st.error("Repository not found or token lacks access.")
+else:
+    st.warning("Unexpected GitHub API response.")
